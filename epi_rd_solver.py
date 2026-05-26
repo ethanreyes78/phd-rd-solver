@@ -2,23 +2,24 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 #Define the Parameters
-Lambda = .01        #population influx rate
-alpha = .2          #environment-to-human transmission rate,
-beta = .01          #human to human transmission
-mu = 5*np.e**(-5)   #natural death rate
-omega = .01         #disease induced death rate
-gamma = .2          #disease recovery rate
-delta = .1          #removal rate of the pathogen from the aquatic environment
-zi = 0.3            #shedding rate of infected hosts
-g = 0.3             #is the intrinsic growth rate of the waterborne pathogen
-K = 2.0             #carrying capacity
-d = 1.0             #pathogen diffusion rate
-v = 2.0             #pathogen advection rate that represents the speed of the river flow
+Lambda = 0.01         # Population influx rate
+alpha = 0.02          # enviroment transmission rate
+beta = 0.01           # human-to-human transmission
+mu = 5e-5             # Natural death rate
+omega = 0.01          # Disease-induced death rate
+gamma = 0.3           # Recovery rate
+delta = 0.1           # Pathogen removal rate
+zi = 0.5              # Shedding rate of infected hosts
+g = 0.3               # Pathogen intrinsic growth rate
+K = 2.0               # Carrying capacity
+d = 1.0               # Pathogen diffusion rate
+v = 1.0               # Moderate river flow speed
 
-#define diffusion rates of susceptible infected
+# Diffusion rates of susceptible, infected, recovered
 c1 = 1.0
-c2 = 2.0
-c3 = 1.5
+c2 = 1.5
+c3 = 1.2
+
 
 #Compute first reation term
 def Reaction1(S, I, B):
