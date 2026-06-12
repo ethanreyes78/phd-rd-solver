@@ -14,12 +14,12 @@ g = 0.05              #intrinsic growth rate of the waterborne pathogen
 K = 100000.0          #carrying capacity
 d = 0.1               #pathogen diffusion rate 
 v = 0.5               #pathogen advection rate (river flow speed)
-c_bound = 2.0         #relative bacterial loss rate at downstream 
+
 
 #Diffusion rates
-c1 = 1.0
-c2 = 0.5
-c3 = 0.8
+c1 = 1.0  #succeptible
+c2 = 0.5  #infected
+c3 = 0.8  #recovered
 
 def Reaction1(S, I, B, alpha_t, beta_t):
     return Lambda - alpha_t*S*B - beta_t*S*I - mu*S
@@ -35,20 +35,17 @@ def Reaction4(B, I, zi_t):
 
 
 #Numerical Method Solver FTCS
-def FiniteDiffSolver(L, T, nx, fixed_nt = None):
+def FiniteDiffSolver(L, T, nx):  
     """
     Solves the 4-equation SIR-B model using FTCS finite difference.
     Stores the entire history in a 2D array of size (nt, nx).
     """
     dx = L / (nx - 1)
 
-    #Calculate stable time step
-    if fixed_nt is None:
-        max_diffusion = max(c1, c2, c3, d)
-        dt_max = 0.4 * (dx**2) / max_diffusion
-        nt = int(T / dt_max) + 1
-    else:
-        nt = fixed_nt
+    #Calculate stable time step 
+    max_diffusion = max(c1, c2, c3, d)
+    dt_max = 0.4 * (dx**2) / max_diffusion
+    nt = int(T / dt_max) + 1
 
     
     #time array
@@ -150,26 +147,20 @@ def graphResults(L, nx, S, I, R, B, t_array):
 
 def spatial_accuracy_check(L, T, nx):
     """
-    This function checks the spatial order of accuracy for the method by creating a fixed value 
-    for dt and nt. This ensures the spatial nodes are working all in the same temporal grid
-    """   
-    #Fix temporal grid accross all sizes of nx by using biggest possible value of nx
-    nx_3 = 2 * (2 * nx - 1) - 1
-    dx_3 = L / (nx_3 - 1)
-    max_diff = max(c1, c2, c3, d)
-    dt_max_3 = 0.4 * (dx_3**2) / max_diff
-    nt_fixed = int(T / dt_max_3) + 1
-
+    This function checks the spatial order of accuracy for the method.
+    """
+ 
     #Calculate w(h)
     nx_1 = nx
-    _, I1, _, _, _ = FiniteDiffSolver(L, T, nx_1, nt_fixed)
+    _, I1, _, _, _ = FiniteDiffSolver(L, T, nx_1)
     
     #Calculate w(h/2)
     nx_2 = 2 * nx_1 - 1
-    _, I2, _, _, _ = FiniteDiffSolver(L, T, nx_2, nt_fixed)
+    _, I2, _, _, _ = FiniteDiffSolver(L, T, nx_2)
     
     #Calculate w(h/4)
-    _, I3, _, _, _ = FiniteDiffSolver(L, T, nx_3, nt_fixed)
+    nx_3 = 2 * nx_2 - 1
+    _, I3, _, _, _ = FiniteDiffSolver(L, T, nx_3)
     
     #Calculate the differences 
     diff_h_h2 = I1[-1, :] - I2[-1, ::2]       # w(h) - w(h/2)
@@ -189,7 +180,7 @@ def spatial_accuracy_check(L, T, nx):
 
 if __name__ == "__main__":
     L = 3 * np.pi
-    T = 10
+    T = 1
     nx = 80
     
     S, I, R, B, t_array = FiniteDiffSolver(L, T, nx)
