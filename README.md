@@ -109,7 +109,7 @@ pip install numpy matplotlib
 
 ## Status
 
-🚧 **Work in progress.** This solver is an introductory implementation developed to build familiarity with reaction-diffusion PDE systems before moving to more complex models.
+**Work in progress.** This solver is an introductory implementation developed to build familiarity with reaction-diffusion PDE systems before moving to more complex models.
 
 ---
 
