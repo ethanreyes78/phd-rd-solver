@@ -70,10 +70,8 @@ def FiniteDiffSolver(L, T, nx):
     
     #Temporal Loop 
     for n in range(nt - 1):
-        current_time = n * dt
-        
         #Seasonality Function
-        T_t = 0.5 + 0.25 * np.sin(2 * np.pi * (n*dt) / 12.0)
+        T_t = 0.5 + 0.25 * np.sin(2 * np.pi * t_array[n] / 12.0)
         
         #Effective rates
         alpha_t = alpha * H_x * T_t
@@ -180,12 +178,12 @@ def spatial_accuracy_check(L, T, nx):
 
 if __name__ == "__main__":
     L = 3 * np.pi
-    T = 1
+    T = 12
     nx = 80
     
     S, I, R, B, t_array = FiniteDiffSolver(L, T, nx)
     
-    #graphResults(L, nx, S, I, R, B, t_array)
+    graphResults(L, nx, S, I, R, B, t_array)
 
-    spatial_accuracy_check(L, T, nx)
+    #spatial_accuracy_check(L, T, nx)
 
