@@ -7,13 +7,13 @@ alpha = 0.0002        #base environment-to-human transmission rate
 beta = 0.0001         #base human to human transmission
 mu = 0.0001           #natural death rate
 omega = 0.01          #disease induced death rate
-gamma = 0.2           #disease recovery rate (1/5 days)
-delta = 0.033         #removal rate of pathogen (1/30 days)
+gamma = 0.2           #disease recovery rate (5 days to recover)
+delta = 0.033         #removal rate of pathogen (30 days in water)
 zi = 0.3              #base shedding rate of infected hosts
-g = 0.05              #intrinsic growth rate of the waterborne pathogen
+g = 0.05              #*intrinsic growth rate of the waterborne pathogen
 K = 100000.0          #carrying capacity
-d = 0.1               #pathogen diffusion rate 
-v = 0.5               #pathogen advection rate (river flow speed)
+d = 0.1               #*pathogen diffusion rate 
+v = .1                #pathogen advection rate (river flow speed)
 
 
 #Diffusion rates
@@ -30,8 +30,8 @@ def Reaction2(S, I, B, alpha_t, beta_t):
 def Reaction3(I, R):
     return gamma*I - mu*R
 
-def Reaction4(B, I, zi_t):
-    return g*B * (1 - B/K) + zi_t*I - delta*B
+def Reaction4(B, I, zi_t, g_t):
+    return g_t*B * (1 - B/K) + zi_t*I - delta*B
 
 
 #Numerical Method Solver FTCS
@@ -77,12 +77,13 @@ def FiniteDiffSolver(L, T, nx):
         alpha_t = alpha * H_x * T_t
         beta_t = beta * H_x * T_t
         zi_t = zi * H_x * T_t
+        g_t = g * T_t
 
         #Spatial Update for interior nodes (1 to nx-2)
         dS = c1 * (S[n, 2:] - 2*S[n, 1:-1] + S[n, :-2]) / (dx**2) + Reaction1(S[n, 1:-1], I[n, 1:-1], B[n, 1:-1], alpha_t[1:-1], beta_t[1:-1])
         dI = c2 * (I[n, 2:] - 2*I[n, 1:-1] + I[n, :-2]) / (dx**2) + Reaction2(S[n, 1:-1], I[n, 1:-1], B[n, 1:-1], alpha_t[1:-1], beta_t[1:-1])
         dR = c3 * (R[n, 2:] - 2*R[n, 1:-1] + R[n, :-2]) / (dx**2) + Reaction3(I[n, 1:-1], R[n, 1:-1])
-        dB = d * (B[n, 2:] - 2*B[n, 1:-1] + B[n, :-2]) / (dx**2) - v * (B[n, 2:] - B[n, :-2]) / (2 * dx) + Reaction4(B[n, 1:-1], I[n, 1:-1], zi_t[1:-1])
+        dB = d * (B[n, 2:] - 2*B[n, 1:-1] + B[n, :-2]) / (dx**2) - v * (B[n, 2:] - B[n, :-2]) / (2 * dx) + Reaction4(B[n, 1:-1], I[n, 1:-1], zi_t[1:-1], g_t[1:-1])
         
         #Time Step Update
         S[n+1, 1:-1] = S[n, 1:-1] + dt * dS
@@ -111,12 +112,12 @@ def FiniteDiffSolver(L, T, nx):
 
 def graphResults(L, nx, S, I, R, B, t_array):
     """
-    Plots the 2D arrays from the numerical method
+    Plots the 2D arrays from the numerical method as 3D graphs
     """
     x = np.linspace(0, L, nx)
     X, T_mesh = np.meshgrid(x, t_array)
 
-    fig = plt.figure(figsize=(16, 12))
+    fig = plt.figure(figsize=(10, 8))
     elev_angle, azim_angle = 30, -135
 
     ax1 = fig.add_subplot(2, 2, 1, projection='3d')
@@ -139,6 +140,7 @@ def graphResults(L, nx, S, I, R, B, t_array):
     ax4.set_title('Pathogen (B)'); ax4.set_xlabel('Location (x)'); ax4.set_ylabel('Time (t)')
     ax4.view_init(elev=elev_angle, azim=azim_angle)
 
+    fig.supxlabel(f'v = {v}', fontsize=16)
     plt.tight_layout()
     plt.show()
 
