@@ -2,18 +2,23 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 #Parameter Initialization
-Lambda = 1.0          #population influx rate
-alpha = 0.0002        #base environment-to-human transmission rate
-beta = 0.0001         #base human to human transmission
-mu = 0.0001           #natural death rate
-omega = 0.01          #disease induced death rate
-gamma = 0.2           #disease recovery rate (5 days to recover)
-delta = 0.033         #removal rate of pathogen (30 days in water)
-zi = 0.3              #base shedding rate of infected hosts
-g = 0.05              #intrinsic growth rate of the waterborne pathogen
-K = 100000.0          #carrying capacity
-d = 0.1               #pathogen diffusion rate 
-v = 0                #pathogen advection rate (river flow speed)
+Lambda = 19.0       #population influx rate Lambda = mu * n  (Wang 2022)
+                        #Lambda = .0019 * 10,000 = 19 per month
+alpha = 0.00033     #base environment-to-human transmission rate (Wang 22)
+beta = 0.00047      #base human to human transmission (Wang 2022)
+mu = 0.0019         #natural death rate 43.5y - Wu 2024
+                        #1 / (43.5 * 12) = 0.0019 per month
+omega = 0.01        #disease induced death rate 
+gamma = 6.0         #disease recovery rate (Range 2.9 to 14 - Wu 2024)
+                        #5 days to recover: 1 / (5/30) = 6.0 per month
+delta = 1.0         #removal rate of pathogen (Range 3 to 41 - Wu 2024)
+                        #30 days ---> 1 / 1.0 = 1 per month
+zi = 300            #base shedding rate of infected hosts (10 per day = 300 - Wang 2022)
+g = 0.05            #intrinsic growth rate of the waterborne pathogen 
+K = 200000.0        #carrying capacity (Wang 2022)
+d = 0.1             #pathogen diffusion rate (Wang 2022)
+v = 1.2             #pathogen advection rate 
+                        #tested at v = 0, .1 , 1.2 (Wang 2022)
 
 
 #Diffusion rates
@@ -181,7 +186,7 @@ def spatial_accuracy_check(L, T, nx):
 if __name__ == "__main__":
     L = 3 * np.pi
     T = 12
-    nx = 80
+    nx = 120
     
     S, I, R, B, t_array = FiniteDiffSolver(L, T, nx)
     
