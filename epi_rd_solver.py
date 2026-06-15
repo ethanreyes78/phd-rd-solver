@@ -81,8 +81,8 @@ def FiniteDiffSolver(L, T, nx):
         #Effective rates
         alpha_t = alpha * H_x * T_t
         beta_t = beta * H_x * T_t
-        zi_t = zi * H_x * T_t
-        g_t = .5 * np.sin(np.pi * t_array[n] / 6.0)
+        zi_t = zi * H_x * T_t #Wang 2022
+        g_t = .5 * np.sin(np.pi * t_array[n] / 6.0) #Wang 2022
 
         #Spatial Update for interior nodes (1 to nx-2)
         dS = c1 * (S[n, 2:] - 2*S[n, 1:-1] + S[n, :-2]) / (dx**2) + Reaction1(S[n, 1:-1], I[n, 1:-1], B[n, 1:-1], alpha_t[1:-1], beta_t[1:-1])
