@@ -21,8 +21,8 @@ v = 1.2             #pathogen advection rate
                         #tested at v = 0, .1 , 1.2 (Wang 2022)
 
 
-#Diffusion rates
-c1 = 1.0  #succeptible
+#Diffusion rates (Wang 2022)
+c1 = 1.0  #succeptible 
 c2 = 0.5  #infected
 c3 = 0.8  #recovered
 
