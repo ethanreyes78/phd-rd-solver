@@ -21,7 +21,7 @@ The model tracks four population/concentration variables over space and time:
 
 ## Model
 
-The system solves the following reaction-diffusion equations, incorporating spatial heterogeneity and seasonality (Wang 2022):
+The system solves the following reaction-advection-diffusion equations, incorporating spatial heterogeneity and seasonality (Wang 2022):
 
 $$
 \frac{\partial S}{\partial t} - c_1 \frac{\partial^2 S}{\partial x^2} = \Lambda - \alpha(x,t) SB - \beta(x,t) SI - \mu S
@@ -36,16 +36,19 @@ $$
 $$
 
 $$
-\frac{\partial B}{\partial t} + v\frac{\partial B}{\partial x} - d\frac{\partial^2 B}{\partial x^2} = gB\left(1 - \frac{B}{K}\right) + \xi(x,t) I - \delta B
+\frac{\partial B}{\partial t} + v\frac{\partial B}{\partial x} - d\frac{\partial^2 B}{\partial x^2} = g(t)B\left(1 - \frac{B}{K}\right) + \xi(x,t) I - \delta B
 $$
 
 for $0 < x < L$ and $t > 0$. 
 
-The transmission rates fluctuate based on location and time of year using the multiplier:
+### Spatio-Temporal Dynamics
 
-$$
-H(x)T(t) = (0.5 + 0.25\cos(2\pi x))(0.5 + 0.25\sin(2\pi t / 12))
-$$
+To simulate realistic environmental conditions, the transmission and growth rates fluctuate based on location and time of year (seasonality):
+
+- **Spatial Heterogeneity:** $H(x) = 0.5 + 0.25\cos(2\pi x)$
+- **Seasonality:** $T(t) = 0.5 + 0.25\sin(2\pi t / 12)$
+
+The transmission rates ($\alpha, \beta, \xi$) are scaled by $H(x)T(t)$ to reflect both location-based risk and seasonal weather changes. The pathogen growth rate ($g$) is scaled purely by $T(t)$ to simulate the effect of seasonal water temperature changes uniformly across the river.
 
 ### Parameters
 
@@ -60,18 +63,18 @@ $$
 | Recovery rate | `γ` | 0.2 | Rate of recovery from infection |
 | Pathogen removal rate | `δ` | 0.033 | Rate of pathogen removal from aquatic environment |
 | Shedding rate | `ξ` | 0.3 | Base rate infected hosts shed pathogen |
-| Pathogen growth rate | `g` | 0.05 | Intrinsic growth rate of waterborne pathogen |
+| Pathogen growth rate | `g` | 0.05 | Base intrinsic growth rate of waterborne pathogen |
 | Carrying capacity | `K` | 100000.0 | Maximum pathogen concentration |
 | Pathogen diffusion rate | `d` | 0.1 | Diffusion coefficient for pathogen in water |
-| Advection rate | `v` | 0.5 | Speed of river flow |
+| Advection rate | `v` | 0.5 | Speed of river flow (convection) |
 | S diffusion rate | `c1` | 1.0 | Diffusion coefficient for susceptible individuals |
 | I diffusion rate | `c2` | 0.5 | Diffusion coefficient for infected individuals |
 | R diffusion rate | `c3` | 0.8 | Diffusion coefficient for recovered individuals |
 
 ### Boundary Conditions
 
-- **Human Populations (S, I, R):** No-flux Neumann boundary conditions ($\frac{\partial U}{\partial x} = 0$), discretized using 2nd-order 3-point one-sided differences.
-- **Pathogen (B):** Robin-type boundary conditions accounting for advection at the river boundaries. The downstream boundary incorporates a relative bacterial loss rate of $c = 2$ (Wang 2022).
+- **Human Populations (S, I, R):** No-flux Neumann boundary conditions ($\frac{\partial U}{\partial x} = 0$), discretized using 2nd-order 3-point one-sided differences to preserve global $O(\Delta x^2)$ accuracy.
+- **Pathogen (B):** Robin-type boundary conditions accounting for advection at the river boundaries. The downstream boundary incorporates a relative bacterial loss rate of $c = 2$ (Wang 2022) and is discretized using an unconditionally stable 2nd-order backward difference.
 
 ### Initial Conditions
 
@@ -96,7 +99,7 @@ Populations are initialized with spatial clustering using periodic functions (Wa
 
 | File | Description |
 |---|---|
-| `epi_rd_solver.py` | Main modular solver — includes parameters, FTCS scheme, 3D plotting, and accuracy checks. |
+| `epi_rd_solver.py` | Main modular solver — includes parameters, vectorized FTCS scheme, 3D plotting, and accuracy checks. |
 | `environment.yml` | Conda environment for reproducibility |
 
 ---
