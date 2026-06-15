@@ -14,7 +14,7 @@ gamma = 6.0         #disease recovery rate (Range 2.9 to 14 - Wu 2024)
 delta = 1.0         #removal rate of pathogen (Range 3 to 41 - Wu 2024)
                         #30 days ---> 1 / 1.0 = 1 per month
 zi = 300            #base shedding rate of infected hosts (10 per day = 300 - Wang 2022)
-g = 0.05            #intrinsic growth rate of the waterborne pathogen 
+g0 = 0.5           #intrinsic growth rate of the waterborne pathogen (Wu 2024)
 K = 200000.0        #carrying capacity (Wang 2022)
 d = 0.1             #pathogen diffusion rate (Wang 2022)
 v = 1.2             #pathogen advection rate 
@@ -82,7 +82,7 @@ def FiniteDiffSolver(L, T, nx):
         alpha_t = alpha * H_x * T_t
         beta_t = beta * H_x * T_t
         zi_t = zi * H_x * T_t
-        g_t = g * T_t
+        g_t = .5 * np.sin(np.pi * t_array[n] / 6.0)
 
         #Spatial Update for interior nodes (1 to nx-2)
         dS = c1 * (S[n, 2:] - 2*S[n, 1:-1] + S[n, :-2]) / (dx**2) + Reaction1(S[n, 1:-1], I[n, 1:-1], B[n, 1:-1], alpha_t[1:-1], beta_t[1:-1])
