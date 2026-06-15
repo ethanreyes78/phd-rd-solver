@@ -10,10 +10,10 @@ omega = 0.01          #disease induced death rate
 gamma = 0.2           #disease recovery rate (5 days to recover)
 delta = 0.033         #removal rate of pathogen (30 days in water)
 zi = 0.3              #base shedding rate of infected hosts
-g = 0.05              #*intrinsic growth rate of the waterborne pathogen
+g = 0.05              #intrinsic growth rate of the waterborne pathogen
 K = 100000.0          #carrying capacity
-d = 0.1               #*pathogen diffusion rate 
-v = .1                #pathogen advection rate (river flow speed)
+d = 0.1               #pathogen diffusion rate 
+v = 0                #pathogen advection rate (river flow speed)
 
 
 #Diffusion rates
@@ -83,7 +83,7 @@ def FiniteDiffSolver(L, T, nx):
         dS = c1 * (S[n, 2:] - 2*S[n, 1:-1] + S[n, :-2]) / (dx**2) + Reaction1(S[n, 1:-1], I[n, 1:-1], B[n, 1:-1], alpha_t[1:-1], beta_t[1:-1])
         dI = c2 * (I[n, 2:] - 2*I[n, 1:-1] + I[n, :-2]) / (dx**2) + Reaction2(S[n, 1:-1], I[n, 1:-1], B[n, 1:-1], alpha_t[1:-1], beta_t[1:-1])
         dR = c3 * (R[n, 2:] - 2*R[n, 1:-1] + R[n, :-2]) / (dx**2) + Reaction3(I[n, 1:-1], R[n, 1:-1])
-        dB = d * (B[n, 2:] - 2*B[n, 1:-1] + B[n, :-2]) / (dx**2) - v * (B[n, 2:] - B[n, :-2]) / (2 * dx) + Reaction4(B[n, 1:-1], I[n, 1:-1], zi_t[1:-1], g_t[1:-1])
+        dB = d * (B[n, 2:] - 2*B[n, 1:-1] + B[n, :-2]) / (dx**2) - v * (B[n, 2:] - B[n, :-2]) / (2 * dx) + Reaction4(B[n, 1:-1], I[n, 1:-1], zi_t[1:-1], g_t)
         
         #Time Step Update
         S[n+1, 1:-1] = S[n, 1:-1] + dt * dS
