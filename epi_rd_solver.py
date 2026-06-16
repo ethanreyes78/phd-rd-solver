@@ -8,7 +8,7 @@ alpha = 0.00033     #base environment-to-human transmission rate (Wang 22)
 beta = 0.00047      #base human to human transmission (Wang 2022)
 mu = 0.0019         #natural death rate 43.5y - Wu 2024
                         #1 / (43.5 * 12) = 0.0019 per month
-omega = 0.01        #disease induced death rate 
+omega = 0.001        #disease induced death rate 
 gamma = 6.0         #disease recovery rate (Range 2.9 to 14 - Wu 2024)
                         #5 days to recover: 1 / (5/30) = 6.0 per month
 delta = 1.0         #removal rate of pathogen (Range 3 to 41 - Wu 2024)
@@ -76,11 +76,11 @@ def FiniteDiffSolver(L, T, nx):
     #Temporal Loop 
     for n in range(nt - 1):
         #Seasonality Function
-        T_t = 0.5 + 0.25 * np.sin(2 * np.pi * t_array[n] / 12.0)
+        T_t = 0.5 + 0.25 * np.sin(2 * np.pi * t_array[n] / 12.0) #Wang 2022
         
         #Effective rates
-        alpha_t = alpha * H_x * T_t
-        beta_t = beta * H_x * T_t
+        alpha_t = alpha * H_x * T_t 
+        beta_t = beta * H_x * T_t #Wu 2024
         zi_t = zi * H_x * T_t #Wang 2022
         g_t = .5 * np.sin(np.pi * t_array[n] / 6.0) #Wang 2022
 

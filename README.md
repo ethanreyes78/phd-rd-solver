@@ -59,7 +59,7 @@ The transmission rates ($\alpha, \beta, \xi$) are scaled by $H(x)T(t)$ to reflec
 | Env-to-human transmission | `α` | 0.0002 | Base rate of transmission from pathogen to human |
 | Human-to-human transmission | `β` | 0.0001 | Base direct transmission rate between individuals |
 | Natural death rate | `μ` | 0.0001 | Background mortality rate |
-| Disease-induced death rate | `ω` | 0.01 | Additional mortality due to infection |
+| Disease-induced death rate | `ω` | 0.001 | Additional mortality due to infection |
 | Recovery rate | `γ` | 0.2 | Rate of recovery from infection |
 | Pathogen removal rate | `δ` | 0.033 | Rate of pathogen removal from aquatic environment |
 | Shedding rate | `ξ` | 0.3 | Base rate infected hosts shed pathogen |
