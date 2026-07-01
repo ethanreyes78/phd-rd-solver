@@ -181,16 +181,39 @@ def spatial_accuracy_check(L, T, nx):
     print(f"Error w(h) - w(h/2):   {error_1:.6e}")
     print(f"Error w(h/2) - w(h/4): {error_2:.6e}")
     print(f"Calculated Order of Accuracy (k): {k:.4f}")
+
+    #calculate dx values
+    dx_1 = L / (nx_1 - 1)
+    dx_2 = L / (nx_2 - 1)
+    
+    dx_values = np.array([dx_1, dx_2])
+    errors = np.array([error_1, error_2])
+    
+    #Create reference line of slope 2
+    reference_line = errors[0] * (dx_values / dx_1)**2 
+
+    #log-log convergence plot
+    plt.figure(figsize=(8, 6))
+    plt.loglog(dx_values, errors, 'bo-', linewidth=2, markersize=8, label='Numerical Error $||w_h - w_{h/2}||$')
+    plt.loglog(dx_values, reference_line, 'k--', linewidth=2, label=r'Reference Slope = 2 ($\mathcal{O}(\Delta x^2)$)')
+    
+    plt.xlabel(r'Spatial Step Size ($\Delta x$)')
+    plt.ylabel('L2 Norm of Error')
+    plt.title('Spatial Grid Convergence')
+    plt.legend()
+    plt.grid(True, which="both", ls="--", alpha=0.5)
+    plt.show()
+
     return k
 
 if __name__ == "__main__":
     L = 3 * np.pi
-    T = 12
-    nx = 120
+    T = 2
+    nx = 80
     
     S, I, R, B, t_array = FiniteDiffSolver(L, T, nx)
     
-    graphResults(L, nx, S, I, R, B, t_array)
+    #graphResults(L, nx, S, I, R, B, t_array)
 
-    #spatial_accuracy_check(L, T, nx)
+    spatial_accuracy_check(L, T, nx)
 
