@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 #Parameter Initialization
 Lambda = 19.0       #population influx rate Lambda = mu * n  (Wang 2022)
                         #Lambda = .0019 * 10,000 = 19 per month
-alpha = 0.00033     #base environment-to-human transmission rate (Wang 22)
+alpha = 0.000033     #base environment-to-human transmission rate (Wang 22)
 beta = 0.00047      #base human to human transmission (Wang 2022)
 mu = 0.0019         #natural death rate 43.5y - Wu 2024
                         #1 / (43.5 * 12) = 0.0019 per month
@@ -15,10 +15,10 @@ delta = 1.0         #removal rate of pathogen (Range 3 to 41 - Wu 2024)
                         #30 days ---> 1 / 1.0 = 1 per month
 zi = 300            #base shedding rate of infected hosts (10 per day = 300 - Wang 2022)
 g0 = 0.5           #intrinsic growth rate of the waterborne pathogen (Wu 2024)
-K = 200000.0        #carrying capacity (Wang 2022)
+K = 2000000.0        #carrying capacity (Wang 2022)
 d = 0.1             #pathogen diffusion rate (Wang 2022)
-v = 1.2             #pathogen advection rate 
-                        #tested at v = 0, .1 , 1.2 (Wang 2022)
+v = 0.7             #pathogen advection rate 
+                        #tested at v = 0, .1 , 1.2 (Wang 2022)                   
 
 
 #Diffusion rates (Wang 2022)
@@ -65,7 +65,7 @@ def FiniteDiffSolver(L, T, nx):
 
     #Spatial grid for initial conditions
     x = np.linspace(0, L, nx)
-    H_x = 0.5 + 0.25 * np.sin(2 * np.pi * x)
+    H_x = 0.5 + 0.25 * np.cos(2 * x)
 
     #Initial Conditions
     S[0, :] = (Lambda / mu) - 500 * np.cos(2 * x)
@@ -78,8 +78,14 @@ def FiniteDiffSolver(L, T, nx):
         #Seasonality Function
         T_t = 0.5 + 0.25 * np.sin(2 * np.pi * t_array[n] / 12.0) #Wang 2022
         
+        # m_I = I[n, :] / (I[n, :] + M)
+        # alpha_t = alpha * (1 - b_factor * m_I) * H_x * T_t 
+        # beta_t = beta * (1 - b_factor * m_I) * H_x * T_t #Wu 2024
+        # zi_t = zi * (1 - b_factor * m_I) * H_x * T_t #Wang 2022
+        # g_t = g0 + 0.5 * np.sin(np.pi * t_array[n] / 6.0) #Wang 2022 
+
         #Effective rates
-        alpha_t = alpha * H_x * T_t 
+        alpha_t = alpha * H_x * T_t
         beta_t = beta * H_x * T_t #Wu 2024
         zi_t = zi * H_x * T_t #Wang 2022
         g_t = .5 * np.sin(np.pi * t_array[n] / 6.0) #Wang 2022
@@ -208,12 +214,12 @@ def spatial_accuracy_check(L, T, nx):
 
 if __name__ == "__main__":
     L = 3 * np.pi
-    T = 2
-    nx = 80
+    T = 12
+    nx = 120
     
     S, I, R, B, t_array = FiniteDiffSolver(L, T, nx)
     
-    #graphResults(L, nx, S, I, R, B, t_array)
+    graphResults(L, nx, S, I, R, B, t_array)
 
-    spatial_accuracy_check(L, T, nx)
+    #spatial_accuracy_check(L, T, nx)
 
