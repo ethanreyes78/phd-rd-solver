@@ -21,7 +21,7 @@ The model tracks four population/concentration variables over space and time:
 
 ## Model
 
-The system solves the following reaction-advection-diffusion equations, incorporating spatial heterogeneity and seasonality (Wang 2022):
+The system solves the following reaction-advection-diffusion equations, incorporating spatial heterogeneity and seasonality based on a bilinear incidence framework:
 
 $$
 \frac{\partial S}{\partial t} - c_1 \frac{\partial^2 S}{\partial x^2} = \Lambda - \alpha(x,t) SB - \beta(x,t) SI - \mu S
@@ -45,41 +45,43 @@ for $0 < x < L$ and $t > 0$.
 
 To simulate realistic environmental conditions, the transmission and growth rates fluctuate based on location and time of year (seasonality):
 
-- **Spatial Heterogeneity:** $H(x) = 0.5 + 0.25\cos(2\pi x)$
-- **Seasonality:** $T(t) = 0.5 + 0.25\sin(2\pi t / 12)$
+- **Spatial Heterogeneity:** $H(x) = 0.5 + 0.25\cos(2x)$
+- **Transmission Seasonality:** $T(t) = 0.5 + 0.25\sin(2\pi t / 12)$
+- **Pathogen Growth Seasonality:** $g(t) = g_0 + g_1 \sin(\pi t / 6)$
 
-The transmission rates ($\alpha, \beta, \xi$) are scaled by $H(x)T(t)$ to reflect both location-based risk and seasonal weather changes. The pathogen growth rate ($g$) is scaled purely by $T(t)$ to simulate the effect of seasonal water temperature changes uniformly across the river.
+The transmission rates ($\alpha, \beta, \xi$) are scaled by $H(x)T(t)$ to reflect both location-based risk (e.g., clustered villages) and seasonal weather changes. The pathogen growth rate ($g$) fluctuates on a 12-month cycle to simulate the effect of seasonal water temperature changes uniformly across the river.
 
 ### Parameters
 
 | Parameter | Symbol | Value | Description |
 |---|---|---|---|
 | Domain Length | `L` | $3\pi$ | Length of the theoretical river |
-| Population influx rate | `Λ` | 1.0 | Recruitment rate into susceptible class |
-| Env-to-human transmission | `α` | 0.0002 | Base rate of transmission from pathogen to human |
-| Human-to-human transmission | `β` | 0.0001 | Base direct transmission rate between individuals |
-| Natural death rate | `μ` | 0.0001 | Background mortality rate |
+| Population influx rate | `Λ` | 19.0 | Recruitment rate into susceptible class |
+| Env-to-human transmission | `α` | 0.000033 | Base rate of transmission from pathogen to human |
+| Human-to-human transmission | `β` | 0.00047 | Base direct transmission rate between individuals |
+| Natural death rate | `μ` | 0.0019 | Background mortality rate (43.5 years) |
 | Disease-induced death rate | `ω` | 0.001 | Additional mortality due to infection |
-| Recovery rate | `γ` | 0.2 | Rate of recovery from infection |
-| Pathogen removal rate | `δ` | 0.033 | Rate of pathogen removal from aquatic environment |
-| Shedding rate | `ξ` | 0.3 | Base rate infected hosts shed pathogen |
-| Pathogen growth rate | `g` | 0.05 | Base intrinsic growth rate of waterborne pathogen |
-| Carrying capacity | `K` | 100000.0 | Maximum pathogen concentration |
+| Recovery rate | `γ` | 6.0 | Rate of recovery from infection (approx. 5 days) |
+| Pathogen removal rate | `δ` | 1.0 | Rate of pathogen natural death in aquatic environment |
+| Shedding rate | `ξ` | 300.0 | Base rate infected hosts shed pathogen |
+| Base pathogen growth rate | `g_0` | 0.5 | Baseline intrinsic growth rate of waterborne pathogen |
+| Seasonal growth amplitude | `g_1` | 0.05 | Amplitude of seasonal pathogen growth fluctuations |
+| Carrying capacity | `K` | 2,000,000.0 | Maximum pathogen concentration in water |
 | Pathogen diffusion rate | `d` | 0.1 | Diffusion coefficient for pathogen in water |
-| Advection rate | `v` | 0.5 | Speed of river flow (convection) |
+| Advection rate | `v` | 0.0 | Speed of river flow (Tested at 0.0, 0.1, 0.7, 1.2) |
 | S diffusion rate | `c1` | 1.0 | Diffusion coefficient for susceptible individuals |
 | I diffusion rate | `c2` | 0.5 | Diffusion coefficient for infected individuals |
 | R diffusion rate | `c3` | 0.8 | Diffusion coefficient for recovered individuals |
 
 ### Boundary Conditions
 
-- **Human Populations (S, I, R):** No-flux Neumann boundary conditions ($\frac{\partial U}{\partial x} = 0$), discretized using 2nd-order 3-point one-sided differences to preserve global $O(\Delta x^2)$ accuracy.
-- **Pathogen (B):** Robin-type boundary conditions accounting for advection at the river boundaries. The downstream boundary incorporates a relative bacterial loss rate of $c = 2$ (Wang 2022) and is discretized using an unconditionally stable 2nd-order backward difference.
+- **Human Populations (S, I, R):** Zero-flux Neumann boundary conditions ($\frac{\partial U}{\partial x} = 0$), discretized using 2nd-order 3-point one-sided differences to preserve global $O(\Delta x^2)$ accuracy.
+- **Pathogen (B):** Zero-flux boundary conditions accounting for advection at the river boundaries ($vB - dB_x = 0$). Also discretized using 2nd-order 3-point one-sided differences.
 
 ### Initial Conditions
 
-Populations are initialized with spatial clustering using periodic functions (Wang 2022):
-- $S(x, 0) = 10000 - 500\cos(2x)$
+Populations are initialized with spatial clustering to simulate distinct outbreak hotspots:
+- $S(x, 0) = (\Lambda / \mu) - 500\cos(2x)$
 - $I(x, 0) = 1 - \cos(2x)$
 - $R(x, 0) = 0$
 - $B(x, 0) = 0.5 - 0.3\cos(2x)$
@@ -91,7 +93,7 @@ Populations are initialized with spatial clustering using periodic functions (Wa
 - **Method:** Explicit finite difference (Forward Time, Centered Space - FTCS).
 - **Spatial discretization:** 2nd-order central difference for interior nodes; 2nd-order 3-point one-sided differences for boundaries.
 - **Time discretization:** 1st-order Forward Euler.
-- **Accuracy Verification:** Includes a Richardson Extrapolation module to empirically verify $O(\Delta x^2)$ spatial accuracy.
+- **Accuracy Verification:** Includes a Richardson Extrapolation module to empirically verify $O(\Delta x^2)$ spatial accuracy using the $L_2$ norm.
 
 ---
 
@@ -119,13 +121,7 @@ Or install manually:
 pip install numpy matplotlib
 ```
 
----
 
-## Status
-
-**Work in progress.** This solver is an introductory implementation developed to build familiarity with reaction-diffusion PDE systems before moving to more complex models.
-
----
 
 ## Author
 
