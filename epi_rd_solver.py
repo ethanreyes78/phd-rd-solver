@@ -14,10 +14,11 @@ gamma = 6.0         #disease recovery rate (Range 2.9 to 14 - Wu 2024)
 delta = 1.0         #removal rate of pathogen (Range 3 to 41 - Wu 2024)
                         #30 days ---> 1 / 1.0 = 1 per month
 zi = 300            #base shedding rate of infected hosts (10 per day = 300 - Wang 2022)
+g1 = .05            #Seasonal fluctuation amplitude of bacteria growth (Wu 2024)
 g0 = 0.5           #intrinsic growth rate of the waterborne pathogen (Wu 2024)
 K = 2000000.0        #carrying capacity (Wang 2022)
 d = 0.1             #pathogen diffusion rate (Wang 2022)
-v = 0.7             #pathogen advection rate 
+v = 0             #pathogen advection rate 
                         #tested at v = 0, .1 , 1.2 (Wang 2022)                   
 
 
@@ -67,8 +68,8 @@ def FiniteDiffSolver(L, T, nx):
     x = np.linspace(0, L, nx)
     H_x = 0.5 + 0.25 * np.cos(2 * x)
 
-    #Initial Conditions
-    S[0, :] = (Lambda / mu) - 500 * np.cos(2 * x)
+    #Initial Conditions (Wang 2022) pg 16
+    S[0, :] = (Lambda / mu) - 500 * np.cos(2 * x) 
     I[0, :] = 1 - np.cos(2 * x)
     R[0, :] = np.zeros(nx)
     B[0, :] = 0.5 - 0.3 * np.cos(2 * x)
@@ -76,9 +77,9 @@ def FiniteDiffSolver(L, T, nx):
     #Temporal Loop 
     for n in range(nt - 1):
         #Seasonality Function
-        T_t = 0.5 + 0.25 * np.sin(2 * np.pi * t_array[n] / 12.0) #Wang 2022
+        T_t = 0.5 + 0.25 * np.sin(2 * np.pi * t_array[n] / 12.0) #Wang 2022 pg 15
         
-        # m_I = I[n, :] / (I[n, :] + M)
+        # m_I = I[n, :] / (I[n, :] + M) # Wang 2022 pg 16
         # alpha_t = alpha * (1 - b_factor * m_I) * H_x * T_t 
         # beta_t = beta * (1 - b_factor * m_I) * H_x * T_t #Wu 2024
         # zi_t = zi * (1 - b_factor * m_I) * H_x * T_t #Wang 2022
@@ -86,9 +87,9 @@ def FiniteDiffSolver(L, T, nx):
 
         #Effective rates
         alpha_t = alpha * H_x * T_t
-        beta_t = beta * H_x * T_t #Wu 2024
+        beta_t = beta * H_x * T_t #Wu 2024 pg 30
         zi_t = zi * H_x * T_t #Wang 2022
-        g_t = .5 * np.sin(np.pi * t_array[n] / 6.0) #Wang 2022
+        g_t = g0 + g1 * np.sin(np.pi * t_array[n] / 6.0) #Wang 2022 / Wu 2024 (pg 15)
 
         #Spatial Update for interior nodes (1 to nx-2)
         dS = c1 * (S[n, 2:] - 2*S[n, 1:-1] + S[n, :-2]) / (dx**2) + Reaction1(S[n, 1:-1], I[n, 1:-1], B[n, 1:-1], alpha_t[1:-1], beta_t[1:-1])
@@ -219,7 +220,7 @@ if __name__ == "__main__":
     
     S, I, R, B, t_array = FiniteDiffSolver(L, T, nx)
     
-    graphResults(L, nx, S, I, R, B, t_array)
+    #graphResults(L, nx, S, I, R, B, t_array)
 
-    #spatial_accuracy_check(L, T, nx)
+    spatial_accuracy_check(L, T, nx)
 
