@@ -9,5 +9,5 @@
 *.synctex.gz
 *.toc
 *.bcf
-*run.xml
+*.run.xml
 build/
