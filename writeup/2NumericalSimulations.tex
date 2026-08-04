@@ -1,0 +1,225 @@
+% !TEX root = main.tex
+\section{Numerical Simulations}
+\subsection{Biological Parameters \& Initialization}
+
+In this section we define and explain the different biological parameters used in the simulation. To start, the simulated length of the river is assumed to have length $3\pi$ expressed as $0 \leq x \leq 3 \pi$. Since the temporal domain is chose to be from $t = 0$ to $t = 12$ each variable must be adjusted to be monthly rates. For example, the average human lifespan of a human in the simulation is assumed to be 43.5 years (\cite{wu_threshold_2024}), which expressed as months would be $\mu = \frac{1}{43.5*12} = 0.0019$. Similar conversions follow for the other parameters used and displayed in the table below. 
+\begin{table}[H]
+\centering
+\caption{Biological interpretations and values for model parameters}
+%Parameter values were adapted from the framework used in \cite{wang_reaction-advection-diffusion_2022} and were slightly adjusted or modified to suit the purposes of this paper. Values marked with an asterisk ($^*$) are estimated for these specific simulations.
+\label{tab:parameters}
+\renewcommand{\arraystretch}{1.3} 
+\begin{tabular}{llc}
+\hline
+\textbf{Parameter} & \textbf{Description} & \textbf{Value} \\ \hline
+$\Lambda$ & Influx rate of susceptible humans & $19.0$ \\
+$\alpha$ & Base indirect contact rate (environment-to-human) & $0.00033$ \\
+$\beta$ & Base direct contact rate (human-to-human) & $0.00047$ \\
+$\mu$ & Natural death rate of human hosts & $0.0019$ \\
+$\omega$ & Disease-induced death rate & varied \\
+$\gamma$ & Recovery rate of infectious hosts & $6.0$ \\
+$\delta$ & Natural death rate of Cholera in water & $1.0$ \\
+$\xi$ & Base shedding rate of Cholera by infectious humans & $300$ \\
+$g_0$ & Baseline intrinsic growth rate of Cholera & $0.5$ \\
+$g_1$ & Seasonal fluctuation amplitude of Cholera growth & $0.5$ \\
+$K$ & Maximal capacity of free-living Cholera in water & 200,000 \\
+$c_1$ & Diffusion coefficient of susceptible humans & $1.0$ \\
+$c_2$ & Diffusion coefficient of infectious humans & $0.5$ \\
+$c_3$ & Diffusion coefficient of recovered humans & $0.8$ \\
+$d$ & Diffusion coefficient of Cholera in the water & $0.1$ \\
+$v$ & Advection coefficient of Cholera (river flow) & varied \\ \hline
+%$c$ & Relative rate of bacterial loss at downstream & $2.0$ \\ \hline
+\end{tabular}
+\end{table}
+The 
+The parameters chosen for our simulation were inspired by the framework and criteria used in papers by \cite{wang_reaction-advection-diffusion_2022} and \cite{wu_threshold_2024}. The parameters $\omega$ and $v$ were tested at different values during the experiment. In particular we let $\omega = 0$ or $\omega  = .001$ for our experiments. With an estimated $21,000$ to $143,000$ deaths out of the 1.3 to 4.0 million cases \cite{who_cholera_2025}, it is reasonable to test these particular values. Furthermore, for advection coefficient of Cholera (river flow) we tested the following values: 
+$v \in \{ 0, \, 0.1, \, 0.7, \, 1.2\}$. Each of the tested values was chosen to represent stagnant water, slow, moderate, and fast flow respectively. 
+%\newpage %-=
+
+
+Since the temporal domain of the simulation is a full year, $0 \leq t \leq 12$, we introduce a seasonality function to realistically model the seasonal osculations due to climate events. Furthermore, we apply the rates of $\alpha, \beta, \xi, $ and $g$ to function function used to properly simulate seasonality and spatial heterogeneity.  
+
+\begin{align*}
+    \alpha_{t_n} &= \alpha  \, \cdot \, H(x)T(t_n) \\
+    \beta_{t_n} &= \beta  \, \cdot \, H(x)T(t_n) \\ 
+    \xi_{t_n} &= \xi  \, \cdot \, H(x)T(t_n) \\
+\end{align*}
+Where the spatial heterogeneity is represented by $H(x) = \frac{1}{2} - \frac{1}{4} \cos(2x)$ and our seasonality function is defined as $T(t_n) =\frac{1}{2} - \frac{1}{4} \sin\big(\frac{2 \pi t_n}{12}\big) $. The spatial heterogeneity function forces the model to simulate different clusters of humans along the river where these clustered would equivalent to villages in the real world. These functions created the spatial heterogeneity needed but are not as robust as other functions used to for an adaptive human behavior approach found as found in other research papers such as \cite{wang2015influence}. Next we present the effective growth rate of Cholera:
+\begin{equation*}
+    g_{t_n} = g_0 + g_1 \sin\big(\frac{\pi \cdot t_n}{6}\big)
+\end{equation*}
+In our model, $g$ represents the intrinsic growth rate of the waterborne pathogen. However, since the growth rate of Cholera varies in different temperatures (\cite{constantin_de_magny_cholera_2009}) we use a periodic function. Since our temporal domain is $0 \leq t \leq 12$, we let our periodic function be $\sin\big(\frac{\pi \cdot t_n}{6}\big)$ so that it completes one full cycle exactly at the end of our domain. 
+Finally we present the initial conditions used in our simulation: 
+\begin{align}
+    S^0_{i} &=  \frac{\Lambda}{\mu} - 500 \cos(2x)\\
+    I^0_{i} &=  1 - \cos(2x)\\
+    R^0_{i} &=  0\\
+    B^0_{i} &=  .5 - .3 \cos(2x)\\
+\end{align}
+To start, the susceptible initial condition used was chosen to again account for spatial heterogeneity throughout the simulated length of the river. In other words, this simulates different pockets or clusters of susceptible individuals along the river. We translate the three full cycles of $\cos(2x)$ on its domain $0 \leq x \leq 3\pi$ to simulate three distinct locations of infection at $t = 0$ which will then be moved downward with advection. Since, we are $t=0$ we naturally assume there to be 0 recovered individuals to start. Next, we use the same $\cos(2x)$ to simulated slightly more concentration of the pathogen in the water where infected individuals are located. 
+\subsection{Numerical Scheme}
+We discretize the spatial domain $[0, L]$ into $N_x$ uniformly spaced nodes, where each node is defined by $x_i = i \Delta x$ for $i = 0, 1, \dots, N_x-1$. Similarly, the temporal domain $[0, T]$ is discretized into $N_t$ time steps defined by $t_n = n \Delta t$ for $n = 0, 1, \dots, N_t-1$. Let $U_i^n$ denote the numerical approximation of a state variable at location $x_i$ and time $t_n$. Now that the spatial and temporal domains are discretized we introduce the general form of a forward time and central space finite difference method. 
+\begin{equation*}
+    w_i^{n+1} = w_i^n + \frac{c \Delta t}{\Delta x^2} \left[  w_{i+1}^n - 2w_i^n + w_{i-1}^n  \right]
+\end{equation*}
+Before we apply this method to our system we first simplify the reaction terms of each equation. Note that that the pathogen includes a first order spatial derivative which we will also approximate using central difference formula.
+\begin{align}
+    F_S(S, I, B) &= \Lambda - \alpha S B - \beta S I - \mu S \\[6pt]
+    F_I(S, I, B) &= \alpha S B + \beta S I - (\mu + \omega + \gamma) I \\[6pt]
+    F_R(I, R) &= \gamma I - \mu R \\[6pt]
+    F_B(B, I) &= g B \left(1 - \frac{B}{K}\right) + \xi I - \delta B
+\end{align}
+After condensing the reaction terms we can now apply the general FTCS method to our system of equation which yields the new following system for the interior spatial nodes ($0 < i < N_x - 1$):
+\begin{align}
+    S_i^{n+1} &= S_i^n + \Delta t \left[ c_1 \frac{S_{i+1}^n - 2S_i^n + S_{i-1}^n}{(\Delta x)^2} + F_S(S_i^n, I_i^n, B_i^n) \right] \label{susceptible} \\[10pt]
+    I_i^{n+1} &= I_i^n + \Delta t \left[ c_2 \frac{I_{i+1}^n - 2I_i^n + I_{i-1}^n}{(\Delta x)^2} + F_I(S_i^n, I_i^n, B_i^n) \right] \label{infected} \\[10pt]
+    R_i^{n+1} &= R_i^n + \Delta t \left[ c_3 \frac{R_{i+1}^n - 2R_i^n + R_{i-1}^n}{(\Delta x)^2} + F_R(I_i^n, R_i^n) \right] \label{recovered} \\[10pt]
+    B_i^{n+1} &= B_i^n + \Delta t \left[ d \frac{B_{i+1}^n - 2B_i^n + B_{i-1}^n}{(\Delta x)^2} - v \frac{B_{i+1}^n - B_{i-1}^n}{2\Delta x} + F_B(B_i^n, I_i^n) \right] \label{pathogen}
+\end{align}
+Next we present the boundary conditions. For both left, $x =0$, and right, $x=3 \pi$, we used second order forward/backward difference formulas respectively. Doing so maintains second order for our system. 
+\begin{align}
+    R^{n+1}_0 &= \frac{4 R^{n+1}_1 - R^{n+1}_2}{3} \\
+    R^{n+1}_{N_x -1} &= \frac{4 R^{n+1}_{N_x -2} - R^{n+1}_{N_x -3}}{3} 
+\end{align}
+Note that identical boundary conditions are used for both $S$ and $I$. However, since the pathogen has an advection term we need to alter the boundary condition for $B$. To ensure second order accuracy across the system we derive the boundary condition by applying the second order forward difference approximation for the first derivative
+\begin{align}
+    \frac{\partial B}{\partial x}  &= \frac{-3B_0 + 4B_1 - B_2}{2\Delta x} + \mathcal{O}(\Delta x^2) \\
+\end{align}
+Now, we then replace $ \frac{\partial B}{\partial x}(0,t)$ from our model's boundary condition and solve for $B_0$:
+\begin{align}
+        v B_0 - d \left( \frac{-3B_0 + 4B_1 - B_2}{2\Delta x} \right) &= 0 \\
+        2v\Delta x B_0 + 3d B_0 - 4d B_1 + d B_2 &= 0 \\
+        B_0 (3d + 2v\Delta x) &= 4d B_1 - d B_2 \\
+        \implies B^{n+1}_0 &= \frac{4d B^{n+1}_1 - d B^{n+1}_2}{3d + 2v\Delta x}
+\end{align}
+Using this boundary condition when $x = 0$ ensures the method remains second order accurate even at the boundary. A similar process follows for evaluating the boundary condition when $x = 3\pi$. Applying the second order backward difference formula to the model's boundary condition:
+\begin{align}
+    \frac{\partial B}{\partial x}  &= \frac{3B_{N_x - 1} - 4B_{N_x - 2} + B_{N_x - 3}}{2\Delta x} + \mathcal{O}(\Delta x^2) \\
+\end{align}
+We then replace the $ \frac{\partial B}{\partial x}(3 \pi,t)$ from our model's boundary condition and solve for $B_{N_x -1}$:
+\begin{align}
+    v B_{N_x - 1} - d \left( \frac{3B_{N_x - 1} - 4B_{N_x - 2} + B_{N_x - 3}}{2\Delta x} \right) &= 0 \\
+    2v\Delta x B_{N_x - 1} - 3d B_{N_x - 1} + 4d B_{N_x - 2} - d B_{N_x - 3} &= 0 \\
+    B_{N_x - 1} (2v\Delta x - 3d) &= -4d B_{N_x - 2} + d B_{N_x - 3} \\
+    B_{N_x - 1} (3d - 2v\Delta x) &= 4d B_{N_x - 2} - d B_{N_x - 3} \\
+    \implies B^{n+1}_{N_x - 1} &= \frac{4d B^{n+1}_{N_x - 2} - d B^{n+1}_{N_x - 3}}{3d - 2v\Delta x}
+\end{align}
+Since we used second order backward difference formula we ensure second order accuracy remains throughout our system. A similar derivation would follow if using vectorized discretization. 
+
+
+%B[n+1, 0] = (4*d*B[n+1, 1] - d*B[n+1, 2]) / (3*d + 2*dx*v)
+
+
+
+\subsection{Vectorized Discretization}
+
+Observe that at each temporal node, $n$, the discrete system would need to iterate over all $N_x$ spatial nodes. Converting this to python means that there would be two for loops with the inner spatial for loop running a full cycle for each temporal node. Depending on the choice of $\Delta x$ and $\Delta t$ this would be extremely computationally expensive and impractical if trying to use larger spatial and temporal domains. Therefore, the practical shift would be to group the interior nodes at time $n$ into a single column vector. 
+\begin{align}
+    \mathbf{S}^{n+1} &= \mathbf{S}^n + \Delta t \left[ c_1 \mathbf{D}_{xx} \mathbf{S}^n + \mathbf{F}_S(\mathbf{S}^n, \mathbf{I}^n, \mathbf{B}^n) \right] \\[8pt]
+    \mathbf{I}^{n+1} &= \mathbf{I}^n + \Delta t \left[ c_2 \mathbf{D}_{xx} \mathbf{I}^n + \mathbf{F}_I(\mathbf{S}^n, \mathbf{I}^n, \mathbf{B}^n) \right] \\[8pt]
+    \mathbf{R}^{n+1} &= \mathbf{R}^n + \Delta t \left[ c_3 \mathbf{D}_{xx} \mathbf{R}^n + \mathbf{F}_R(\mathbf{I}^n, \mathbf{R}^n) \right] \\[8pt]
+    \mathbf{B}^{n+1} &= \mathbf{B}^n + \Delta t \left[ d \mathbf{D}_{xx} \mathbf{B}^n - v \mathbf{D}_x \mathbf{B}^n + \mathbf{F}_B(\mathbf{B}^n, \mathbf{I}^n) \right]
+\end{align}
+
+This new approach to the discretization of the method drastically reduces the computational cost. Furthermore, observe that we define the gradient matrices $D_{xx}$ and $D_x$ to be the following matrices. 
+
+\begin{equation}
+\mathbf{D}_{xx} = \frac{1}{\Delta x^2} 
+\begin{bmatrix} 
+-2 & 1 & 0 & \cdots & 0 \\ 
+1 & -2 & 1 & \cdots & 0 \\ 
+0 & 1 & -2 & \cdots & 0 \\ 
+\vdots & \vdots & \vdots & \ddots & \vdots \\ 
+0 & 0 & 0 & \cdots & -2 
+\end{bmatrix}, 
+\quad 
+\mathbf{D}_x = \frac{1}{2\Delta x} 
+\begin{bmatrix} 
+0 & 1 & 0 & \cdots & 0 \\ 
+-1 & 0 & 1 & \cdots & 0 \\ 
+0 & -1 & 0 & \cdots & 0 \\ 
+\vdots & \vdots & \vdots & \ddots & \vdots \\ 
+0 & 0 & 0 & \cdots & 0 
+\end{bmatrix}
+\end{equation}
+While not explicitly given, the vectorized form of the boundary conditions is ensured to be second order accurate and requires minimal adaption from its non-vectroized form. Again we note that using the vectorized discretized form of the system and for the boundary conditions is ideal since it is computationally less expensive. Furthermore, proving both forms to be stable would be redundant and therefore, we only present the non-vectorized scheme. 
+
+
+
+
+
+
+\subsection{Stability \& Numerical Analysis}
+\subsubsection{CFL Stability}
+To analyze the stability we will use the non-vectorized scheme and re-index the spatial index from $S^{n+1}_i$ to $S^{j+1}_m$ to conduct von Neumann analysis. Looking at equation \ref{susceptible}, we will subtract $S^n_m$ from both sides which yields the following homogeneous equation: 
+\begin{equation}
+    S_m^{j+1} - S_m^j = c_1 \frac{\Delta t}{\Delta x^2} (S_{m+1}^j - 2S_m^j + S_{m-1}^j) 
+\end{equation}
+Therefore, if we let $S_m^n = a_n e^{i k m \Delta x}$, it yields the following:
+\begin{align}
+    (a_{j+1} - a_j) e^{i n m \Delta x} &= a_j \frac{c_1 \Delta t}{\Delta x^2} [e^{i n \Delta x} - 2 + e^{-i n \Delta x}] e^{i n m \Delta x} \\
+    a_{j+1} - a_j &= a_j \frac{c_1 \Delta t}{\Delta x^2} [e^{i n \Delta x} - 2 + e^{-i n \Delta x}] \\
+    &= a_j \frac{c_1 \Delta t}{\Delta x^2} \cdot 2 (\cos(n \Delta x) - 1) \triangleq (-R) \cdot a_j 
+\end{align}
+Now since $R = \frac{c_1 \Delta t}{\Delta x^2} \cdot 2(1-\cos(n\Delta x)) = \frac{4 c_1 \Delta t}{\Delta x^2} \sin^2\left(\frac{n\Delta x}{2}\right)$. 
+Because $c_1, \Delta t$, and $\Delta x$ are strictly positive physical constants, and the squared sine function is always non-negative, it follows that $R \geq 0$. Therefore we have $a_{j+1} = (1-R)a_j$. Next we define the amplification factor $r = \frac{a_{j+1}}{a_j} = 1 - R$.  Note that stability requires the magnitude of the amplification factor to be bounded by 1, meaning $|r| \leq 1$, which expands to the double inequality:
+\begin{equation}
+    -1 \leq 1-R \leq 1
+\end{equation}
+The upper bound of the stability condition ($1 - R \leq 1$) simplifies to $-R \leq 0 \implies R \geq 0$. As established above, $R$ is inherently non-negative. Therefore, the upper bound is satisfied for all choices of $\Delta t$ and $\Delta x$. To ensure the method is stable we need to show that $1- R \geq -1$ or in particular we need to show that $1 - \frac{4 c_1 \Delta t}{\Delta x^2} \sin^2\left(\frac{n\Delta x}{2}\right) \geq -1$ for all $n$. Hence $1 - \frac{4 c_1 \Delta t}{\Delta x^2}  \geq -1 \implies \frac{c \Delta t}{\Delta x^2} \leq \frac{1}{2}$. We conclude that the method is conditionally stable. 
+
+Note that the human components $(S, R, I)$ all have the same conditional stability since they are governed by pure reaction-diffusion. However, the pathogen, $B$ includes an advection term to represent river flow. Therefore, since there is an additional requirement for stability due to the coupling of convection and diffusion. 
+\begin{align}
+    (v \frac{\Delta t}{\Delta x})^2 &\leq 2 d \frac{\Delta t}{\Delta x^2} \\
+    v^2 \frac{\Delta t^2}{\Delta x^2}& \leq 2d \frac{\Delta t}{\Delta x^2} \\
+    \Delta t & \leq \frac{2d}{v^2}
+\end{align}
+In the context of our simulation this condition for $B$ and the condition for $S,I,R$ are easily met. To guarantee numerical stability throughout the simulation, the time step $\Delta t$ is dynamically calculated based on the spatial step $\Delta x$ and the strictest diffusion term. In particular we use: 
+
+\begin{align}
+    D_{\max} &= \max \{ c_1, c_2, c_3, d \} \\[6pt]
+    \Delta t_{\max} &= 0.4 \frac{(\Delta x)^2}{D_{\max}} \\[6pt]
+    N_t &= \left\lfloor \frac{T}{\Delta t_{\max}} \right\rfloor + 1 \\[6pt]
+    \Delta t &= \frac{T}{N_t}
+\end{align}
+
+First, we identify $D_{\max}$, the largest diffusion coefficient in the system, as it imposes the strictest stability condition. Next, we calculate the maximum allowable time step, $\Delta t_{\max}$. While the theoretical von Neumann stability limit for the heat equation is $0.5 \frac{\Delta x^2}{D}$, We use a value  of $0.4$ to ensure the scheme remains strictly within the stability region. 
+
+Because the total number of time steps $N_t$ must be an integer, we divide the total simulation time, $T$, by $\Delta t_{\max}$, apply the floor function ($\lfloor \cdot \rfloor$), and add 1. Finally, the actual time step $\Delta t$ is recalculated by dividing $T$ by $N_t$ which guarantees the simulation is stable. 
+
+\subsubsection{Spatial Accuracy Analysis}
+We note that the theoretical spatial accuracy is second order $\mathcal{O}(\Delta x^2)$ and therefore to verify our findings we conduct our spatial accuracy analysis. Let $y$ denote the exact analytical solution and $w(h)$ denote the numerical solution computed with a spatial step size of $h = \Delta x$. Since we do not have an analytical solution $y$, we utilize an extrapolation approach to estimate the order of accuracy $k$.
+
+Assuming the numerical method converges with order $k$, the global error can be modeled as:
+\begin{equation}
+    e(h) \equiv w(h) - y = c h^k
+\end{equation}
+where $c$ is a constant independent of $h$. Evaluating the error at successively halved step sizes, $h/2$ and $h/4$, yields:
+\begin{align}
+    e\left(\frac{h}{2}\right) &\equiv w\left(\frac{h}{2}\right) - y = c\left(\frac{h}{2}\right)^k = \frac{1}{2^k} c h^k \\
+    e\left(\frac{h}{4}\right) &\equiv w\left(\frac{h}{4}\right) - y = c\left(\frac{h}{4}\right)^k = \frac{1}{2^{2k}} c h^k
+\end{align}
+
+By taking the ratio of the differences between these successive errors, the unknown exact solution $y$ and the constant $c$ are algebraically eliminated:
+\begin{equation}
+    \frac{e(h) - e\left(\frac{h}{2}\right)}{e\left(\frac{h}{2}\right) - e\left(\frac{h}{4}\right)} = \frac{\left(1 - \frac{1}{2^k}\right) c h^k}{\frac{1}{2^k}\left(1 - \frac{1}{2^k}\right) c h^k} = 2^k
+\end{equation}
+
+Since the difference in errors is equivalent to the difference in the numerical solutions ($e(h) - e(h/2) = w(h) - w(h/2)$), we can isolate $k$ by taking the base-2 logarithm. Applying the $L_2$ norm across the spatial grid to evaluate the vectors, the calculated order of accuracy is:
+\begin{equation}
+    k = \log_2 \left( \frac{||w(h) - w(h/2)||_{L_2}}{||w(h/2) - w(h/4)||_{L_2}} \right)
+\end{equation}
+
+By plotting the spatial step size against the $L_2$ norm of the error, we can visually and numerically confirm this convergence rate.
+
+\begin{figure}[H] % [h] suggests placing it "here"
+\centering
+\includegraphics[width=0.6\textwidth]{Images/SpatialAccuracy.png}
+\caption{Log-log Plot of Convergence}
+\label{fig:loglogplot}
+\end{figure}
+\quad Figure \ref{fig:loglogplot} displays the log-log plot of the spatial step size versus the numerical error. The calculated error strictly follows the reference line of slope 2, yielding a computed order of accuracy of $k = 1.9119$. To achieve the exact halving of the spatial step size ($h$, $h/2$, $h/4$) required for this extrapolation, we follow a basic formula to calculate the required number of nodes. For a grid with $N_x$ nodes, there are $N_x - 1$ spatial intervals. To halve the step size, we must double the number of intervals, resulting in a new grid size of $2(N_x - 1) + 1 = 2N_x - 1$. For our spatial analysis, we initialize the base grid with $N_{x,1} = 200$ nodes. Subsequently, we calculate the refined grids as $N_{x,2} = 2(200) - 1 = 399$ nodes, and $N_{x,3} = 2(399) - 1 = 797$ nodes. 
+
+\quad Our numerical result for the spatial accuracy analysis is as expected. Our usage of second order forward/backward difference approximation for the boundary conditions as well as the usage of second order central difference for first and second derivative for the interior nodes are the theoretical backbone for our numerical result. As established in our stability analysis, the temporal step size is strictly bounded by the spatial step size via the CFL condition ($\frac{\Delta t }{ \Delta x^2}$). Consequently, halving the spatial step size requires quartering the temporal step size to maintain stability, resulting in an eight-fold increase in total computational cost for each level of refinement.
+
+

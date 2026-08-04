@@ -1,0 +1,138 @@
+% !TEX root = main.tex
+\newpage 
+\section{Introduction}
+
+\noindent
+{\large A reaction-diffusion model for waterborne infection}
+
+\vskip0.2in
+We consider a waterborne disease, such as cholera, that can be transmitted 
+from both the environment-to-human and human-to-human pathways.
+As a starting point, we consider a one-dimensional (1D) spatial domain
+$ 0 \leq x \leq a$ for some positive constant $a$
+which may represent a river containing the pathogen.
+
+Let the population densities of the susceptible, infected, and recovered individuals be
+$S(x, t)$, $I(x, t)$, and $R(x,t)$ respectively, at location $x$ and time $t$.
+Let also the pathogen concentration in the river be $B(x,t)$. 
+We have the following reaction-diffusion equations to describe 
+the disease transmission:
+\begin{equation}
+\begin{aligned}
+ & \frac{\partial S}{\partial t} - c_1 \frac{\partial^2 S}{\partial x^2} 
+   = \Lambda - \alpha SB - \beta SI - \mu S, \\
+ & \frac{\partial I}{\partial t} - c_2 \frac{\partial^2 I}{\partial x^2} 
+   =  \alpha SB + \beta SI - (\mu + \omega + \gamma) I, \\
+ & \frac{\partial R}{\partial t} - c_3 \frac{\partial^2 R}{\partial x^2}   
+   =  \gamma I-\mu R , \\
+ &  \frac{\partial B}{\partial t} + v \frac{\partial B}{\partial x} 
+   - d \frac{\partial^2 B}{\partial x^2} = g B \big(1 - \frac{B}{K} \big) +\xi I - \delta B,   
+\end{aligned} 
+ \label{eqn-recdiff}
+\end{equation}
+for $ 0 < x < L$ and $ t > 0$.
+The parameters $c_1$, $c_2$ and $c_3$ are the diffusion rates of the susceptible,
+infected, and recovered individuals,
+respectively;
+$\Lambda$ is the population influx rate, $\alpha$ is the environment-to-human 
+transmission rate,
+$\beta$ is the human-to-human transmission rate,
+$\mu$ is the natural death rate, $\omega$ is the disease-induced death rate, and
+$\gamma$ is the disease recovery rate.
+In addition, $g$ is the intrinsic growth rate of the waterborne pathogen,
+$K$ is its carrying capacity, $\xi$ is the shedding rate of infected hosts,
+$\delta$ is the removal rate of the pathogen from the aquatic environment, 
+$d$ is the pathogen diffusion rate, 
+and $v$ is the pathogen advection rate that represents the speed of the river flow.
+
+
+We may use no-flux boundary conditions for system \eqref{eqn-recdiff}:
+\begin{equation}
+\begin{aligned}
+&  \frac{\partial Y}{\partial x}(0, t) = 0, \quad 
+  \frac{\partial Y}{\partial x}(L, t) = 0, \quad {\rm where} \;\; Y = S, I, R; \\
+& v B(0, t) - d \frac{\partial B}{\partial x}(0, t) = 0 , \quad
+ v B(L, t) - d \frac{\partial B}{\partial x}(L, t) = 0, 
+\end{aligned}
+ \label{bc-noflux}
+\end{equation}
+for $ t >0$.
+Meanwhile, we need to provide appropriate initial conditions:
+\begin{equation}
+  Y(x,0) = Y_0(x) \geq 0, \quad {\rm where} \;\; Y = S, I, R, B, 
+ \label{ic-host}
+\end{equation}
+for $0 \leq x \leq L$.
+
+
+
+
+% !TEX root = main.tex
+\newpage 
+\section{Introduction}
+
+\noindent
+{\large A reaction-diffusion model for waterborne infection}
+
+\vskip0.2in
+We consider a waterborne disease, such as cholera, that can be transmitted 
+from both the environment-to-human and human-to-human pathways.
+As a starting point, we consider a one-dimensional (1D) spatial domain
+$ 0 \leq x \leq a$ for some positive constant $a$
+which may represent a river containing the pathogen.
+
+Let the population densities of the susceptible, infected, and recovered individuals be
+$S(x, t)$, $I(x, t)$, and $R(x,t)$ respectively, at location $x$ and time $t$.
+Let also the pathogen concentration in the river be $B(x,t)$. 
+We have the following reaction-diffusion equations to describe 
+the disease transmission:
+\begin{equation}
+\begin{aligned}
+ & \frac{\partial S}{\partial t} - c_1 \frac{\partial^2 S}{\partial x^2} 
+   = \Lambda - \alpha SB - \beta SI - \mu S, \\
+ & \frac{\partial I}{\partial t} - c_2 \frac{\partial^2 I}{\partial x^2} 
+   =  \alpha SB + \beta SI - (\mu + \omega + \gamma) I, \\
+ & \frac{\partial R}{\partial t} - c_3 \frac{\partial^2 R}{\partial x^2}   
+   =  \gamma I-\mu R , \\
+ &  \frac{\partial B}{\partial t} + v \frac{\partial B}{\partial x} 
+   - d \frac{\partial^2 B}{\partial x^2} = g B \big(1 - \frac{B}{K} \big) +\xi I - \delta B,   
+\end{aligned} 
+ \label{eqn-recdiff}
+\end{equation}
+for $ 0 < x < L$ and $ t > 0$.
+The parameters $c_1$, $c_2$ and $c_3$ are the diffusion rates of the susceptible,
+infected, and recovered individuals,
+respectively;
+$\Lambda$ is the population influx rate, $\alpha$ is the environment-to-human 
+transmission rate,
+$\beta$ is the human-to-human transmission rate,
+$\mu$ is the natural death rate, $\omega$ is the disease-induced death rate, and
+$\gamma$ is the disease recovery rate.
+In addition, $g$ is the intrinsic growth rate of the waterborne pathogen,
+$K$ is its carrying capacity, $\xi$ is the shedding rate of infected hosts,
+$\delta$ is the removal rate of the pathogen from the aquatic environment, 
+$d$ is the pathogen diffusion rate, 
+and $v$ is the pathogen advection rate that represents the speed of the river flow.
+
+
+We may use no-flux boundary conditions for system \eqref{eqn-recdiff}:
+\begin{equation}
+\begin{aligned}
+&  \frac{\partial Y}{\partial x}(0, t) = 0, \quad 
+  \frac{\partial Y}{\partial x}(L, t) = 0, \quad {\rm where} \;\; Y = S, I, R; \\
+& v B(0, t) - d \frac{\partial B}{\partial x}(0, t) = 0 , \quad
+ v B(L, t) - d \frac{\partial B}{\partial x}(L, t) = 0, 
+\end{aligned}
+ \label{bc-noflux}
+\end{equation}
+for $ t >0$.
+Meanwhile, we need to provide appropriate initial conditions:
+\begin{equation}
+  Y(x,0) = Y_0(x) \geq 0, \quad {\rm where} \;\; Y = S, I, R, B, 
+ \label{ic-host}
+\end{equation}
+for $0 \leq x \leq L$.
+
+
+
+

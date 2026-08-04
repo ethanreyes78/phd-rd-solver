@@ -1,0 +1,166 @@
+\documentclass[12pt]{article}
+\usepackage[T1]{fontenc} % Added to support Bold Small Caps font shapes
+
+% \usepackage{authblk}
+\usepackage{color}
+% \usepackage[all]{xy}
+\usepackage{subcaption}
+\usepackage{amsmath,epsfig}
+\usepackage{amssymb,amsthm}
+\usepackage{setspace}
+\usepackage{float}
+%\usepackage{cite}
+
+% Changed linkcolor=black to remove blue text/outlines in TOC, while keeping citations blue
+\usepackage[colorlinks=true, linkcolor=black, citecolor=blue, urlcolor=blue, breaklinks=true]{hyperref}
+
+% ── TOC Formatting Package ──
+% Moved ABOVE parskip to prevent the "\@starttoc has already been redefined" warning
+\usepackage{tocloft} 
+
+% ── Packages added for GitHub reference sheet ──
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{parskip}
+\usepackage{courier}
+\usepackage{titlesec}
+
+% ── Code block styling (used in gitHub.tex) ──
+\lstset{
+    basicstyle=\ttfamily\small,
+    backgroundcolor=\color{gray!10},
+    frame=single,
+    framerule=0.4pt,
+    rulecolor=\color{gray!50},
+    breaklines=true,
+    xleftmargin=8pt,
+    xrightmargin=8pt,
+    aboveskip=6pt,
+    belowskip=6pt
+}
+
+% ── Section styling ──
+%\titleformat{\section}{\large\bfseries}{}{0em}{}[\titlerule]
+%\titleformat{\subsection}{\normalsize\bfseries}{}{0em}{}
+
+\newcommand{\R}{\mathcal{R}}
+
+% =====================================================================
+% CITATION SETUP: Custom BibLaTeX (Mimics Springer Math Bio Style)
+% =====================================================================
+\usepackage[
+    backend=biber, 
+    style=authoryear, 
+    maxcitenames=2, 
+    maxbibnames=99, 
+    giveninits=true, 
+    terseinits=true, 
+    uniquename=init, % Added to fix the biblatex conflicting options warning
+    dashed=false, 
+    url=false, 
+    doi=true
+]{biblatex}
+
+% Remove quotation marks from article titles
+\DeclareFieldFormat[article,inbook,incollection,inproceedings,patent,thesis,unpublished]{title}{#1}
+
+% Remove the word "In:" before journal names
+\renewbibmacro{in:}{%
+  \ifentrytype{article}{}{\printtext{\bibstring{in}\intitlepunct}}}
+
+% Remove "pp." from page numbers in articles
+\DeclareFieldFormat[article]{pages}{#1}
+
+% Format Volume and Number as Volume:Number
+\renewbibmacro*{volume+number+eid}{%
+  \printfield{volume}%
+  \setunit*{\addcolon}%
+  \printfield{number}%
+  \setunit{\addcomma\space}%
+  \printfield{eid}}
+
+\addbibresource{References.bib}
+% =====================================================================
+
+\usepackage[margin=1.0in]{geometry}
+\usepackage{graphicx}
+
+% =====================================================================
+% TABLE OF CONTENTS SETUP
+% =====================================================================
+% 1. Center the "Contents" title and make it Small Caps
+\renewcommand{\cfttoctitlefont}{\hfill\Large\scshape\bfseries}
+\renewcommand{\cftaftertoctitle}{\hfill\mbox{}}
+
+% 2. Add dotted lines to Sections (the article class hides these by default)
+\renewcommand{\cftsecleader}{\cftdotfill{\cftdotsep}}
+
+% 3. Make Section titles and Section page numbers bold
+\renewcommand{\cftsecfont}{\bfseries}
+\renewcommand{\cftsecpagefont}{\bfseries}
+
+\begin{document}
+
+% =====================================================================
+% CUSTOM TITLE PAGE
+% =====================================================================
+\begin{titlepage}
+    \begin{center}
+    \vspace*{1cm}
+    \line(1,0){450} \\
+    [.25in]
+    \huge{\bfseries Reaction Diffusion Model for a Waterborne Pathogen} \\
+    [2mm]
+    \line(1,0){400} \\
+    [1.5cm]
+    \textsc{\LARGE University of Tennessee at Chattanooga}\\
+    [.5cm]
+    %\textsc{\Large PhD in Computational Science: Applied Mathematics} \\
+    
+    \vfill % Pushes the bottom block down automatically
+    
+    \textsc{\Large Advisor: Dr. Jin Wang} \\
+    \textsc{\small UTC Department of Mathematics} \\
+    [1cm]
+    \textsc{\Large Ethan Reyes} \\
+    \textsc{\small qww165@mocs.utc.edu} \\
+    [1cm]
+    \textsc{\Large July 2026}
+    \vspace*{1cm}
+    \end{center}
+\end{titlepage}
+
+% =====================================================================
+% ABSTRACT PLACEHOLDER
+% =====================================================================
+\begin{abstract}
+    TBD
+    \\
+    \\ \textbf{Keywords:} \emph{Reaction-Diffusion, Waterborne Pathogen, Numerical Simulation, Cholera}
+\end{abstract}
+
+\newpage
+
+% =====================================================================
+% TABLE OF CONTENTS
+% =====================================================================
+\pagenumbering{roman}
+\tableofcontents
+\newpage
+\pagenumbering{arabic}
+
+% =====================================================================
+% MAIN CONTENT
+% =====================================================================
+\input{1Introduction.tex}
+\input{2NumericalSimulations.tex}
+\input{3Discussion.tex}
+\newpage %----------------------------------------------
+\input{4Conclusion.tex}
+
+\newpage %------------------------------------------------------------
+
+\printbibliography
+
+\end{document}
